@@ -1,0 +1,21 @@
+--This code created a manually inputed table
+
+with
+
+encontro_certo as (
+select
+    *
+    
+from (
+values
+
+('2022-07-14','Vendendo um carro','PAULO xxxxxxxxxxxx','(xx)xxxxxxxx','xxxxxx@hotmail.com','Chevrolet prisma'),
+('2022-07-14','Vendendo um carro','PAULO xxxxxxxxxxxx','(xx)xxxxxxxx','pxxxxxx@hotmail.com','Hinduí creta'),
+('2022-07-14','Vendendo um carro','Edivaldo José Lázaro ','(xx)xxxxxxxx','xxxxxaro@gmail.com','Hyundai I30 '),
+('2022-07-13','Comprando um carro','Juliana Miranda da Silva ','(xx)xxxxxxxx','jxxxxxxxxx3@gmail.com','Fiat gol'),
+('2022-07-13','Vendendo um carro','Luiz ','(xx)xxxxxxxx','rxxxxx08@gmail.com','Corola Cross '),
+('2022-07-15','Vendendo um carro','Otávio Almeida ','(xx)xxxxxxxx','oxxxxxca@hotmail.com','Renault Fluence Dinamic 2.0 automático ')
+
+) tab(enviado_em,eu_estou,nome,celular,email,carro)
+
+) ,

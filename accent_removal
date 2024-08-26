@@ -1,0 +1,11 @@
+--This is only a snippet for removing accent marks
+select
+regexp_replace(regexp_replace(regexp_replace(regexp_replace(regexp_replace(regexp_replace(regexp_replace(
+    lower('fácil tirar acento de pé')
+    , '[àáâäã]', 'a' )
+    , '[éèêë]', 'e' )
+    , '[íìîï]', 'i' )
+    , '[óòôöõ]', 'o' )
+    , '[úùûü]', 'u' )
+    , '[ç]', 'c' )
+    , '[ñ]', 'n' ) as test 

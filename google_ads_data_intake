@@ -1,0 +1,18 @@
+--This code gets data from Google Ads
+select 
+emp.id as employer_id,
+utm_campaign as campaign_name,
+started_at,
+referrer,
+landing_page,
+cast(split_part(split_part(landing_page,'hsa_ad=',2),'&hsa_cam',1) as bigint) as ad_id
+
+from ahoy_visits as visit
+         join da.mv_ahoy_user_lookups as map on map.visitor_token=visit.visitor_token and map.user_type ='Employer'
+         join tmp.employers as emp on emp.id=map.user_id
+         where True
+         and referrer like '%google%'
+         --and (landing_page like '%projects%'
+         --or landing_page like '%employer%')
+         --and utm_campaign is not null
+         --and started_at between date('2023-10-01') and date('2023-12-31') 

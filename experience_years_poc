@@ -1,0 +1,39 @@
+--source: https://sqlfiddle.com/mysql/online-compiler?sqlFiddleLegacyID=9-0a8a1-3
+--Same function of "experience_years" file, but testing a method found on the internet
+with 
+t as (
+select
+mom_id as person_id,
+start_date,
+coalesce(end_date,current_date) as end_date
+from tmp.experiences
+where mom_id in (1312,	
+1958,	
+2697,	
+5131,	
+10175,	
+11688,	
+14121,	
+20147,	
+22592,	
+25120	)
+)
+
+select    person_id, sum(days)
+from      (
+    select    t1.person_id,
+              t1.start_date,
+              t1.end_date,
+              case when t1.end_date > coalesce(greatest(max(t2.end_date), t1.start_date), t1.start_date) 
+                   then datediff('day', coalesce(greatest(max(t2.end_date), t1.start_date), t1.start_date),t1.end_date)::float/365
+                   else 0
+              end  days
+    from      t  t1
+    left join t  t2 on t1.person_id = t2.person_id
+                   and (t2.start_date < t1.start_date
+                    or t2.start_date = t1.start_date and t2.end_date < t1.end_date)
+    group by  t1.person_id,
+              t1.start_date,
+              t1.end_date
+    ) detail
+group by person_id

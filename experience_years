@@ -1,0 +1,60 @@
+with
+base as (
+select id, start_date, coalesce(end_date,current_date) as end_date
+from tmp.experiences
+where mom_id=2697
+),
+
+remove_equals as (
+select
+id,
+start_date,
+end_date,
+lag(end_date) over (partition by start_date order by start_date,end_date) as prev_end_date ,
+lag(start_date) over (partition by start_date order by start_date,end_date) as prev_start_date 
+from base
+order by 2,3
+),
+
+atrib_rep as (
+select *,case when start_date=prev_start_date and end_date=prev_end_date then 'repetido' else null end as repete from remove_equals
+),
+
+base_1 as (
+select id,start_date,end_date from atrib_rep where repete is null),
+
+
+contidos as (
+select distinct a.id
+from base_1 as a
+join base_1 as b on (a.start_date>=b.start_date and a.end_date<=b.end_date and datediff('day',a.start_date,a.end_date)<datediff('day',b.start_date,b.end_date))),
+
+base_sep as (
+select * from base_1
+where id not in (select * from contidos)
+),
+
+intersects as (
+select
+start_date,
+end_date,
+lag(start_date) over(order by start_date) as prev_start_date,
+lag(end_date) over(order by start_date) as prev_end_date
+from base_sep
+),
+
+total_intersects as (
+select
+sum(date_diff('day',start_date,prev_end_date)::float/365) as total_delta
+from intersects
+),
+
+total_intervals as(
+select
+sum(date_diff('day',start_date,end_date)::float/365) as total_delta
+from base_sep
+)
+
+select
+a.total_delta-b.total_delta as yearsexperience
+from total_intervals as a, total_intersects as b

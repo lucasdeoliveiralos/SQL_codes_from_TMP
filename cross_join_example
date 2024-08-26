@@ -1,0 +1,84 @@
+--This is a cross join unnest usage
+
+with
+--selecionamos todos os filtros do campo data em eventos de load do listing em autos
+filtered_searches as (
+select
+    a.lurker_id,
+    a.public_account_id,
+    json_extract(a.data,'$.filters.fuel') as fuel,
+    event_ts
+from tracker.lurker_web_2 a
+where 1=1
+    and cast(array_join(array[a.year, a.month, a.day], '-') as date) between date('{{DATE_TO_LOAD.start}}') and date('{{DATE_TO_LOAD.end}}')
+    and a.event_type = 'impression'
+    and a.object_name = 'listing'
+    and a.object_detail = 'search_results'
+    and a.category_id = 2020
+),
+vectored as(
+select lurker_id,
+    public_account_id,
+    case when fuel is null then array[0]
+    when is_json_scalar(fuel) then array[cast(fuel as bigint)]
+    else cast(fuel as array(bigint)) end as fuel,
+   event_ts
+   from filtered_searches
+   ),
+break_table as(
+select
+    a.lurker_id,
+    a.public_account_id,
+    a.fuel,
+    b.fuel_selected
+from vectored as a
+cross join unnest( a.fuel) as b(fuel_selected)
+),
+names_table as(
+select lurker_id,
+      fuel_selected,
+      case when fuel_selected=1 then 'Gasolina'
+           when fuel_selected=2 then 'Álcool'
+           when fuel_selected=3 then 'Flex'
+           when fuel_selected=4 then 'GNV'
+           when fuel_selected=5 then 'Diesel'
+           when fuel_selected=6 then 'Híbrido'
+           when fuel_selected=7 then 'Elétrico'
+           else 'fuel_filter_not_used' end as fuel_name
+from break_table
+)
+select count (distinct lurker_id), fuel_name
+from names_table
+group by 2
+order by 1 desc
+--where a.fuel is not null
+--case when fuel=1 then 'Gasolina'
+-- 	when fuel=2 then 'Álcool'
+-- 	when fuel=3 then 'Flex'
+-- 	when fuel=4 then 'GNV'
+-- 	when fuel=5 then 'Diesel'
+-- 	when fuel=6 then 'Híbrido'
+-- 	when fuel=7 then 'Elétrico'
+-- 	else 'fuel_not_declared' end as fuel,
+
+--CROSS JOIN
+vectored as(
+select lurker_id,
+    public_account_id,
+    case when fuel is null then array[0]
+    when is_json_scalar(fuel) then array[cast(fuel as bigint)]
+    else cast(fuel as array(bigint)) end as fuel,
+   event_ts 
+   from filtered_searches 
+   ),
+   
+   
+break_table as(
+select 
+    a.lurker_id,
+    a.public_account_id,
+    a.fuel,
+    b.fuel_selected
+from vectored as a
+cross join unnest( a.fuel) as b(fuel_selected)
+),

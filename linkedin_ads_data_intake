@@ -1,0 +1,47 @@
+--This code gets data from linkedin ads platform
+with
+
+base_table as (
+
+select 
+mom.id as mom_id,
+bid.id as bid_id,
+hire.id as hire_id,
+pin.vertical,
+pin.remote,
+case
+when referrer like '%utm_campaign=talent_pm_conversion%' then 'product_manager_campaign' 
+when referrer like '%utm_campaign=talent_ba_conversion%' then 'business_analyst_campaign'
+when referrer like '%utm_campaign=talent_ux_conversion%' then 'ux_designer_campaign' end as campaign
+
+from ahoy_visits as visit
+         join da.mv_ahoy_user_lookups as map on map.visitor_token=visit.visitor_token and map.user_type ='Mom'
+         join tmp.moms as mom on mom.id=map.user_id
+         left join tmp.bids as bid on bid.mom_id = mom.id
+         and bid.created_at >= date('2023-11-09')
+         left join da.mv_project_info as pin on pin.project_id=bid.project_id
+         left join tmp.hires as hire on bid.id = hire.bid_id
+         and hire.created_at >= date('2023-11-09')
+         where referrer like '%linkedin%'
+         and landing_page not like '%projects%'
+         and landing_page not like '%employer%'
+         and (referrer like '%utm_campaign=talent_pm_conversion%'
+         or referrer like '%utm_campaign=talent_ba_conversion%'
+         or referrer like '%utm_campaign=talent_ux_conversion%')
+         and started_at between date('2023-11-09') and date('2023-12-06') 
+         ),
+         
+         final as (
+         select
+         distinct mom_id,
+         campaign,
+         count(distinct bid_id) as n_bids_made,
+         count(distinct hire_id) as n_hires_get--,
+         --vertical,
+         --remote
+         --
+         from base_table
+         group by 1,2
+         )
+         
+         select * from final where n_bids_made>0

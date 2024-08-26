@@ -1,1 +1,1 @@
---This code aims to grab a bunch of time intervals an user declares being active at a job position, and then merge all of them, and then calculate the total time of employment this user has along his life.
+--These codes are not part of the same project; They're snipets used in the past for building queries
